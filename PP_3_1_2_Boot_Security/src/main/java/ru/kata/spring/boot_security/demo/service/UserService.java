@@ -11,10 +11,12 @@ public interface UserService {
 
     User getUserById(Long id);
 
+    User getUserByUsername(String username);
+
     void saveUser(User user);
 
-    void removeUserById(long id);
+    void removeUserById(Long id);
 
-    void updateUser(User user);
+    void updateUser(User user, Long id);
 
 }

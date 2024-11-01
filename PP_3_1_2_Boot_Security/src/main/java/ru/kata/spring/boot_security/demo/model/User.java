@@ -1,35 +1,37 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    @Pattern(regexp = "^[A-Za-zА-Яа-яЁё]+$", message = "Имя должно содержать только буквы.")
-    @Size(min = 1, message = "Минимальная длина 1 символ")
-    private String name;
+    @NotEmpty(message = "Name should not be empty")
+    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
+    @Column(name = "username")
+    private String username;
 
-    @Column(name = "lastName")
-    @Pattern(regexp = "^[A-Za-zА-Яа-яЁё]+$", message = "Фамилия должна содержать только буквы.")
-    @Size(min = 1, message = "Минимальная длина 1 символ")
-    private String lastName;
 
+    @Column(name = "password")
+    @NotEmpty(message = "Password should not be empty")
+    private String password;
+
+
+    @Min(value = 1, message = "Enter number greater than 0")
     @Column(name = "age")
-    @Min(value = 0, message = "Возраст не может быть отрицательным")
-    @Max(value = 100, message = "Возраст не может быть больше 100")
     private Byte age;
 
 
@@ -44,10 +46,11 @@ public class User {
 
     }
 
-    public User(String name, String lastName, Byte age) {
-        this.name = name;
-        this.lastName = lastName;
+    public User(String username, String password, Byte age, Set<Role> role) {
+        this.username = username;
+        this.password = password;
         this.age = age;
+        this.role = role;
     }
 
     public Long getId() {
@@ -58,20 +61,21 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getLastName() {
-        return lastName;
+    public Set<Role> getRole() {
+        return role;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setRole(Set<Role> role) {
+        this.role = role;
     }
 
     public Byte getAge() {
@@ -82,20 +86,50 @@ public class User {
         this.age = age;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User user)) return false;
-        return Objects.equals(id, user.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 
     @Override
     public String toString() {
-        return String.format("%d, %s, %s, %d", getId(), getName(), getLastName(), getAge());
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", age=" + age +
+                ", role=" + role +
+                '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
